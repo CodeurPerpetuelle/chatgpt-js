@@ -1,0 +1,168 @@
+<html>
+  <head>
+    <title>OpenAI API Demo</title>
+    <style>
+      /* Add your CSS styles here */
+      body {
+        font-family: Arial, sans-serif;
+        color: #333333;
+      }
+      form {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        box-sizing: border-box;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+      }
+      input[type="submit"] {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      input[type="submit"]:hover {
+        background-color: #45a049;
+      }
+      /* Add some styles for the conversation transcript */
+      .conversation {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 500px;
+        margin: 0 auto;
+      }
+      .conversation .message {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 16px;
+      }
+      .conversation .message .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #cccccc;
+        margin-right: 16px;
+      }
+      .conversation .message.user .avatar {
+        background-color: #4CAF50;
+      }
+      .conversation .message .text {
+        background-color: #f8f8f8;
+        padding: 8px 12px;
+        border-radius: 4px;
+      }
+      .conversation .message.user .text {
+        background-color: #e0f2f1;
+      }
+      /* Add some styles for the left side menu */
+      .menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 200px;
+        height: 100%;
+        background-color: #eeeeee;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 16px;
+      }
+      .menu .button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .menu .button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu">
+      <button class="button" onclick="startNewConversation()">Start New Conversation</button>
+    </div>
+    <div class="conversation">
+        <div class="message user">
+          <div class="avatar"></div>
+          <div class="text">
+            <p>Hello, how can I help you today?</p>
+          </div>
+        </div>
+        <form id="openai-form" method="post" action="https://api.openai.com/v1/completions">
+          <div class="message system">
+            <div class="avatar"></div>
+            <div class="text">
+              <p>I'm here to answer your questions. What do you want to know?</p>
+            </div>
+          </div>
+          <div class="message user">
+            <div class="avatar"></div>
+            <div class="text">
+              <input type="text" id="question" name="question" placeholder="Ask a question">
+              <input type="submit" value="Submit">
+            </div>
+          </div>
+          <div id="response"></div>
+        </form>
+      </div>
+      <button onclick="exportTranscript()">Export Transcript</button>
+      <script src="api-key.js"></script>
+      <script>
+        function startNewConversation() {
+          // Clear the conversation transcript
+          document.querySelector('.conversation').innerHTML = '';
+          // Clear the form input field
+          document.querySelector('#question').value = '';
+        }
+        document.querySelector('#openai-form').addEventListener('submit', event => {
+          event.preventDefault();
+          const question = document.querySelector('#question').value;
+          const data = {
+            prompt: question,
+            model: 'text-davinci-002',
+            temperature: 0.5,
+            max_tokens: 256,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0
+          };
+          const headers = new Headers({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+          });
+          const options = {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data)
+          };
+          fetch('https://api.openai.com/v1/completions', options)
+            .then(response => response.json())
+            .then(response => {
+              const answer = response.choices[0].text;
+              const responseElement = document.querySelector('#response');
+              responseElement.innerHTML = `
+                <div class="message system">
+                  <div class="avatar"></div>
+                  <div class="text">
+                    <p>${answer}</p>
+                  </div>
+                </div>
+              `;
+            });
+        });
+      </script>
+    </body>
+  </html>
+  
